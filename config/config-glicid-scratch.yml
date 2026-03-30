@@ -1,0 +1,15 @@
+dataDir: "/LAB-DATA/GLiCID/projects/CRCI2NA_DATA/ICAGEN/MYRACLE/Analyses/scMultiome/1-QualityControl/2-BarcodeCuration/Objects/BySample"
+#dataDir: "/scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates/data/subsample"
+cogapsOutDir: "/scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates-test/results"
+mayaOutDir: "/scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates-test/results"
+nPatternsRange: [12]
+cogapsIterations: 50000
+cooDir_combined: "/LAB-DATA/GLiCID/projects/CRCI2NA_DATA/ICAGEN/MYRACLE/Analyses/scMultiome/1-QualityControl/2-BarcodeCuration/Tables/BySample"
+cooDir_multimodal: "/LAB-DATA/GLiCID/projects/CRCI2NA_DATA/ICAGEN/MYRACLE/Analyses/scMultiome/4-SubclonalAnalyses/2-CopyNumberAlterations/muscadet/BySample"
+subcloneDir: "/LAB-DATA/GLiCID/projects/CRCI2NA_DATA/ICAGEN/MYRACLE/Analyses/scMultiome/4-SubclonalAnalyses/2-CopyNumberAlterations/muscadet/BySample"
+
+patternsPerSample: "/scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates-test/workflow/nb_patterns_per_sample.tsv"
+
+samples:
+  - MM-01-0274-T
+  - MM-01-0282-T2

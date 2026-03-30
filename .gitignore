@@ -1,0 +1,18 @@
+# Snakemake
+workflow/.snakemake/
+*.log
+*.tmp
+.snakemake
+
+# Data
+data/
+results/
+
+# Environnements
+.env
+*.conda
+*.yaml
+
+# Python
+__pycache__/
+*.pyc
