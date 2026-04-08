@@ -1,0 +1,295 @@
+---
+title: "CoGAPS Report | `r params$sample` | `r params$npatterns` patterns"
+format:
+  html:
+    toc: true
+    toc-location: right
+    toc-depth: 3
+    code-fold: true
+    code-tools: true
+    highlight-style: github
+    embed-resources: true
+    anchor-sections: true
+    smooth-scroll: true
+lightbox: true
+execute:
+  cache: false
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+params:
+  sample: "SAMPLE"
+  npatterns: 0
+  contrib_cells: ""
+  contrib_genes: ""
+  markers_excel: ""
+  enrich_csv: ""
+  overr_csv: ""
+  kw_csv: ""
+  pairwise_csv: ""
+  dotplot: ""
+  png_specificity_patterns: ""
+  png_specificity_subclones: ""
+  png_enrich_unique: ""
+  png_overr_unique: ""
+  png_enrich_heatmap: ""
+  png_overr_heatmap: ""
+  png_enrich_heatmap_manually: ""
+  png_overr_heatmap_manually: ""
+  umap_scrnaseq: ""
+  umap_scatacseq: ""
+  umap_multimodal: ""
+  umap_nmf: ""
+  umap_nb_cells_bysubclones: ""
+  umap_nb_cells_bypatterns: ""
+  weight_scrnaseq: ""
+  weight_scatacseq: ""
+  weight_multimodal: ""
+  weight_nmf: ""
+---
+```{r setup, include=FALSE}
+suppressPackageStartupMessages({
+    library(readxl)
+    library(readr)
+    library(dplyr)
+    library(knitr)
+    library(kableExtra)
+})
+s <- params$sample
+n <- params$npatterns
+```
+
+## Overview
+```{r tbl-params}
+data.frame(
+    Parameter = c("Sample", "Number of patterns"),
+    Value     = c(s, as.character(n))
+) |> kable() |> kable_styling(full_width = FALSE)
+```
+
+## Pattern specificity
+
+::: {.panel-tabset}
+
+### By pattern
+```{r fig-specificity-patterns}
+#| fig-cap: "Pattern specificity"
+#| out-width: 100%
+include_graphics(params$png_specificity_patterns)
+```
+
+### By subclone
+```{r fig-specificity-subclones}
+#| fig-cap: "Subclone specificity"
+#| out-width: 100%
+include_graphics(params$png_specificity_subclones)
+```
+
+:::
+
+## Markers
+
+::: {.panel-tabset}
+
+### Dotplot
+```{r fig-dotplot}
+#| fig-cap: "Marker genes dotplot"
+#| out-width: 100%
+include_graphics(params$dotplot)
+```
+
+### Table
+```{r tbl-markers}
+sheets <- excel_sheets(params$markers_excel)
+for (sh in sheets) {
+    df <- read_excel(params$markers_excel, sheet = sh)
+    cat("####", sh, "\n\n")
+    print(
+        kable(head(df, 30), caption = paste("Sheet:", sh)) |>
+            kable_styling(bootstrap_options = c("striped", "hover")) |>
+            scroll_box(height = "300px")
+    )
+    cat("\n\n")
+}
+```
+
+:::
+
+## Hallmarks
+
+::: {.panel-tabset}
+
+### Enrichment — unique
+```{r fig-enrich-unique}
+#| fig-cap: "Hallmarks enrichment (unique)"
+#| out-width: 100%
+include_graphics(params$png_enrich_unique)
+```
+
+### Enrichment — heatmap (get_function)
+```{r fig-enrich-heatmap}
+#| fig-cap: "Hallmarks enrichment heatmap"
+#| out-width: 100%
+include_graphics(params$png_enrich_heatmap)
+```
+
+### Enrichment — heatmap (manually)
+```{r fig-enrich-heatmap-manually}
+#| fig-cap: "Hallmarks enrichment heatmap (manually)"
+#| out-width: 100%
+include_graphics(params$png_enrich_heatmap_manually)
+```
+
+### Overrepresentation — unique
+```{r fig-overr-unique}
+#| fig-cap: "Hallmarks overrepresentation (unique)"
+#| out-width: 100%
+include_graphics(params$png_overr_unique)
+```
+
+### Overrepresentation — heatmap (get_function)
+```{r fig-overr-heatmap}
+#| fig-cap: "Hallmarks overrepresentation heatmap"
+#| out-width: 100%
+include_graphics(params$png_overr_heatmap)
+```
+
+### Overrepresentation — heatmap (manually)
+```{r fig-overr-heatmap-manually}
+#| fig-cap: "Hallmarks overrepresentation heatmap (manually)"
+#| out-width: 100%
+include_graphics(params$png_overr_heatmap_manually)
+```
+
+### Tables
+```{r tbl-enrich}
+read_csv(params$enrich_csv, show_col_types = FALSE) |>
+    kable(caption = "Hallmarks enrichment") |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "350px")
+```
+```{r tbl-overr}
+read_csv(params$overr_csv, show_col_types = FALSE) |>
+    kable(caption = "Hallmarks overrepresentation") |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "350px")
+```
+
+:::
+
+## Statistics
+
+::: {.panel-tabset}
+
+### Kruskal-Wallis
+```{r tbl-kw}
+read_csv(params$kw_csv, show_col_types = FALSE) |>
+    kable() |> kable_styling(bootstrap_options = c("striped", "hover"))
+```
+
+### Pairwise comparisons
+```{r tbl-pairwise}
+read_csv(params$pairwise_csv, show_col_types = FALSE) |>
+    kable() |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "400px")
+```
+
+:::
+
+## UMAP — Dominant pattern
+
+::: {.panel-tabset}
+
+### scRNA-seq
+```{r fig-umap-scrna}
+#| out-width: 100%
+include_graphics(params$umap_scrnaseq)
+```
+
+### scATAC-seq
+```{r fig-umap-scatac}
+#| out-width: 100%
+include_graphics(params$umap_scatacseq)
+```
+
+### Multimodal
+```{r fig-umap-multi}
+#| out-width: 100%
+include_graphics(params$umap_multimodal)
+```
+
+### NMF
+```{r fig-umap-nmf}
+#| out-width: 100%
+include_graphics(params$umap_nmf)
+```
+
+### Cell counts by subclone
+```{r fig-nb-cells-subclones}
+#| out-width: 100%
+include_graphics(params$umap_nb_cells_bysubclones)
+```
+
+### Cell counts by pattern
+```{r fig-nb-cells-patterns}
+#| out-width: 100%
+include_graphics(params$umap_nb_cells_bypatterns)
+```
+
+:::
+
+## UMAP — Pattern weight
+
+::: {.panel-tabset}
+
+### scRNA-seq
+```{r fig-weight-scrna}
+#| out-width: 100%
+include_graphics(params$weight_scrnaseq)
+```
+
+### scATAC-seq
+```{r fig-weight-scatac}
+#| out-width: 100%
+include_graphics(params$weight_scatacseq)
+```
+
+### Multimodal
+```{r fig-weight-multi}
+#| out-width: 100%
+include_graphics(params$weight_multimodal)
+```
+
+### NMF
+```{r fig-weight-nmf}
+#| out-width: 100%
+include_graphics(params$weight_nmf)
+```
+
+:::
+
+## Contributions
+
+::: {.panel-tabset}
+
+### Cells
+```{r tbl-contrib-cells}
+read_tsv(params$contrib_cells, show_col_types = FALSE) |>
+    head(50) |>
+    kable() |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "400px")
+```
+
+### Genes
+```{r tbl-contrib-genes}
+read_tsv(params$contrib_genes, show_col_types = FALSE) |>
+    head(50) |>
+    kable() |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "400px")
+```
+
+:::

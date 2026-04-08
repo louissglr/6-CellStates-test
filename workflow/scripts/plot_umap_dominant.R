@@ -11,7 +11,7 @@ suppressPackageStartupMessages({
 
 contrib_file <- snakemake@input[["contributions"]]
 umap_file    <- snakemake@input[["umap"]]
-output_pdf   <- snakemake@output[["pdf"]]
+output_png   <- snakemake@output[["png"]]
 
 sample_name  <- snakemake@wildcards[["sample"]]
 dataset      <- snakemake@params[["dataset"]]
@@ -132,8 +132,6 @@ p <- ggplot(plot_df, aes(x = UMAP_1, y = UMAP_2, color = dominant_pattern)) +
 # 6. Export PDF
 # --------------------------------------------------
 
-pdf(output_pdf, width = 10, height = 8)
+png(output_png, width = 10, height = 8, units = "in", res = 300)
 print(p)
 dev.off()
-
-message("Finished: ", output_pdf)

@@ -27,15 +27,17 @@ def all_outputs():
         base = config["cogapsOutDir"] + f"/{s}/cogaps/patterns_{n}"
         prefix = f"{s}.npatterns-{n}"
 
-        # Markers Excel
+        # Markers Excel and DotPlot
         outputs.append(f"{base}/markers/{prefix}.markers.xlsx")
+        outputs.append(f"{base}/markers/{prefix}.dotplot.png")
 
         # Contributions
         outputs.append(f"{base}/contributions/{prefix}.contributions_cells.txt")
         outputs.append(f"{base}/contributions/{prefix}.contributions_genes.txt")
 
         # Pattern specificity PDF
-        outputs.append(f"{base}/specificity/{prefix}.patterns_specificity.pdf")
+        outputs.append(f"{base}/specificity/{prefix}.plot_patterns.png")
+        outputs.append(f"{base}/specificity/{prefix}.plot_subclones.png")
 
         # Hallmarks enrichment & overrepresentation CSVs
         outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.hallmarks_enrichment.csv")
@@ -44,49 +46,46 @@ def all_outputs():
         outputs.append(f"{base}/hallmarks/manually/overrep/{prefix}.hallmarks_overrepresentation.csv")
 
         # Hallmarks unique PDFs
-        outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.hallmarks_enrichment_unique.pdf")
-        outputs.append(f"{base}/hallmarks/get_function/overrep/{prefix}.hallmarks_overrepresentation_unique.pdf")
+        outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.hallmarks_enrichment_unique.png")
+        outputs.append(f"{base}/hallmarks/get_function/overrep/{prefix}.hallmarks_overrepresentation_unique.png")
 
         # Hallmarks PDFs
         outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.hallmarks_enrichment.pdf")
         outputs.append(f"{base}/hallmarks/get_function/overrep/{prefix}.hallmarks_overrepresentation.pdf")
-
-        # Intersection hallmarks
-        outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.intersection_hallmarks_enrichment.pdf")
-        outputs.append(f"{base}/hallmarks/get_function/overrep/{prefix}.intersection_hallmarks_overrepresentation.pdf")
-        outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.intersection_hallmarks_enrichment.csv")
-        outputs.append(f"{base}/hallmarks/get_function/overrep/{prefix}.intersection_hallmarks_overrepresentation.csv")
 
         # Statistics
         outputs.append(f"{base}/statistics/{prefix}.kw_results.csv")
         outputs.append(f"{base}/statistics/{prefix}.pairwise_results.csv")
 
         # Heatmaps
-        outputs.append(f"{base}/markers/{prefix}.heatmaps.pdf")
-        outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.hallmarks_enrichment_heatmap.pdf")
-        outputs.append(f"{base}/hallmarks/get_function/overrep/{prefix}.hallmarks_overrepresentation_heatmap.pdf")
-        outputs.append(f"{base}/hallmarks/manually/enrichment/{prefix}.hallmarks_enrichment_heatmap.pdf")
-        outputs.append(f"{base}/hallmarks/manually/overrep/{prefix}.hallmarks_overrepresentation_heatmap.pdf")
+        outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.hallmarks_enrichment_heatmap.png")
+        outputs.append(f"{base}/hallmarks/get_function/overrep/{prefix}.hallmarks_overrepresentation_heatmap.png")
+        outputs.append(f"{base}/hallmarks/manually/enrichment/{prefix}.hallmarks_enrichment_heatmap.png")
+        outputs.append(f"{base}/hallmarks/manually/overrep/{prefix}.hallmarks_overrepresentation_heatmap.png")
 
         # UMAP dominant
         for dataset in ["scrnaseq", "scatacseq", "multimodal", "nmf"]:
-            outputs.append(f"{base}/umap/dominant/{prefix}.UMAP_dominant_{dataset}.pdf")
+            outputs.append(f"{base}/umap/dominant/{prefix}.UMAP_dominant_{dataset}.png")
 
         # UMAP nb_cells
-        outputs.append(f"{base}/umap/dominant/infos/{prefix}.nb_cells.pdf")
+        outputs.append(f"{base}/umap/dominant/infos/{prefix}.nb_cells_bysubclones.png")
+        outputs.append(f"{base}/umap/dominant/infos/{prefix}.nb_cells_bypatterns.png")
 
         # UMAP coords NMF
         outputs.append(f"{base}/umap/coo/{prefix}.nmf.umap-coords.txt")
 
         # UMAP weight
         for dataset in ["scrnaseq", "scatacseq", "multimodal", "nmf"]:
-            outputs.append(f"{base}/umap/weight/{prefix}.UMAP_weight_{dataset}.pdf")
+            outputs.append(f"{base}/umap/weight/{prefix}.UMAP_weight_{dataset}.png")
 
 #        outputs.append(config["cogapsOutDir"] + f"/{s}/cogaps/clustree/clustree_table.tsv")
 #        outputs.append(config["cogapsOutDir"] + f"/{s}/cogaps/clustree/clustree.pdf")
 
         # Recap global (par sample)
         outputs.append(config["cogapsOutDir"] + f"/{s}/cogaps/patterns_recap_global.csv")
+
+        #Quarto render HTML
+        outputs.append(f"{base}/report/{prefix}.report.html")
 
     # Maya (par sample uniquement, pas de npatterns)
     for sample in SAMPLES:
@@ -180,7 +179,8 @@ rule patterns_specificity:
         contributions_file=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/contributions/{sample}.npatterns-{npatterns}.contributions_cells.txt",
         subclone=config["subcloneDir"] + "/{sample}/seurat-multimodal_vars30-30/clusters/clusters_vars30-30_res0.4.tsv",
     output:
-        pdf=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.patterns_specificity.pdf"
+        png1=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.plot_patterns.png",
+        png2=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.plot_subclones.png"
     conda:
         "envs/cogaps.yml"
     threads: 1
@@ -231,41 +231,14 @@ rule plot_uniq_hallmarks:
         csv_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment.csv",
         csv_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation.csv"
     output:
-        pdf_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_unique.pdf",
-        pdf_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_unique.pdf"
+        png_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_unique.png",
+        png_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_unique.png"
     conda:
         "envs/cogaps.yml"
     threads: 1
     script:
         "scripts/plot_uniq_hallmarks.R"
 
-
-rule go_enrichment:
-    input:
-        markers=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/{sample}.npatterns-{npatterns}.markers.xlsx"
-    output:
-        pdf=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/{sample}.npatterns-{npatterns}.GO_enrichment.pdf"
-    conda:
-        "envs/cogaps.yml"
-    threads: 1
-    script:
-        "scripts/go_enrichment.R"
-
-
-rule intersection_hallmarks:
-    input:
-        csv_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment.csv",
-        csv_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation.csv"
-    output:
-        pdf_inter_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.intersection_hallmarks_enrichment.pdf",
-        pdf_inter_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.intersection_hallmarks_overrepresentation.pdf",
-        csv_inter_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.intersection_hallmarks_enrichment.csv",
-        csv_inter_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.intersection_hallmarks_overrepresentation.csv"
-    conda:
-        "envs/cogaps.yml"
-    threads: 1
-    script:
-        "scripts/intersection_hallmarks.R"
 
 
 rule patterns_significance:
@@ -282,17 +255,18 @@ rule patterns_significance:
         "scripts/patterns_significance.R"
 
 
-rule plot_cogaps_heatmap:
+rule plot_markers:
     input:
-        cogaps_rds=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/object/{sample}.npatterns-{npatterns}.cogaps-object.Rds",
-        markers_excel=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/markers/{sample}.npatterns-{npatterns}.markers.xlsx"
+        contrib = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/contributions/{sample}.npatterns-{npatterns}.contributions_cells.txt",
+        tumor_rna_seuratobj = config["dataDir"] + "/{sample}/{sample}.scrnaseq.icagen-filtered.seurat-object.Rds",
+        markers_excel = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/markers/{sample}.npatterns-{npatterns}.markers.xlsx"
     output:
-        pdf=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/markers/{sample}.npatterns-{npatterns}.heatmaps.pdf"
+        png=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/markers/{sample}.npatterns-{npatterns}.dotplot.png"
     conda:
-        "envs/cogaps.yml"
+        "envs/cogaps.yml" 
     threads: 1
     script:
-        "scripts/plot_markers_heatmap.R"
+        "scripts/plot_markers.R"
 
 
 rule plot_hallmarks_heatmap:
@@ -300,8 +274,8 @@ rule plot_hallmarks_heatmap:
         csv_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment.csv",
         csv_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation.csv"
     output:
-        pdf_heatmap_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_heatmap.pdf",
-        pdf_heatmap_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_heatmap.pdf"
+        png_heatmap_enrich=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_heatmap.png",
+        png_heatmap_overr=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_heatmap.png"
     conda:
         "envs/cogaps.yml"
     threads: 1
@@ -314,13 +288,14 @@ rule plot_hallmarks_heatmap_manually:
         csv_enrich =  config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment.csv",
         csv_overr =  config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation.csv"
     output:
-        pdf_heatmap_enrich = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_heatmap.pdf",
-        pdf_heatmap_overr = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_heatmap.pdf"
+        png_heatmap_enrich = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_heatmap.png",
+        png_heatmap_overr = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_heatmap.png"
     conda:
         "envs/cogaps.yml"
     threads: 1
     script:
         "scripts/plot_hallmarks_heatmap_manually.R"
+
 
 rule umap_dominant:
     input:
@@ -335,7 +310,7 @@ rule umap_dominant:
             else config["cogapsOutDir"] + f"/{wildcards.sample}/cogaps/patterns_{wildcards.npatterns}/umap/coo/{wildcards.sample}.npatterns-{wildcards.npatterns}.nmf.umap-coords.txt"
         )
     output:
-        pdf=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/{sample}.npatterns-{npatterns}.UMAP_dominant_{dataset}.pdf"
+        png=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/{sample}.npatterns-{npatterns}.UMAP_dominant_{dataset}.png"
     params:
         dataset="{dataset}"
     wildcard_constraints:
@@ -359,7 +334,7 @@ rule umap_weight:
             else config["cogapsOutDir"] + f"/{wildcards.sample}/cogaps/patterns_{wildcards.npatterns}/umap/coo/{wildcards.sample}.npatterns-{wildcards.npatterns}.nmf.umap-coords.txt"
         )
     output:
-        pdf=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_{dataset}.pdf"
+        png=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_{dataset}.png"
     params:
         dataset="{dataset}"
     wildcard_constraints:
@@ -375,7 +350,8 @@ rule nb_cells:
         contrib=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/contributions/{sample}.npatterns-{npatterns}.contributions_cells.txt",
         subclones=config["subcloneDir"] + "/{sample}/seurat-multimodal_vars30-30/clusters/clusters_vars30-30_res0.4.tsv",
     output:
-        pdf=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/infos/{sample}.npatterns-{npatterns}.nb_cells.pdf",
+        png1=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/infos/{sample}.npatterns-{npatterns}.nb_cells_bysubclones.png",
+        png2=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/infos/{sample}.npatterns-{npatterns}.nb_cells_bypatterns.png"
     conda:
         "envs/cogaps.yml"
     threads: 1
@@ -441,3 +417,90 @@ rule recap_patterns_global:
 
     
 
+rule render_quarto_report:
+    """Render HTML report per sample/npatterns, PNG figures + tables."""
+    input:
+        qmd                        = "scripts/report_cogaps.qmd",
+        contrib_cells              = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/contributions/{sample}.npatterns-{npatterns}.contributions_cells.txt",
+        contrib_genes              = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/contributions/{sample}.npatterns-{npatterns}.contributions_genes.txt",
+        markers_excel              = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/markers/{sample}.npatterns-{npatterns}.markers.xlsx",
+        enrich_csv                 = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment.csv",
+        overr_csv                  = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation.csv",
+        kw_csv                     = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/statistics/{sample}.npatterns-{npatterns}.kw_results.csv",
+        pairwise_csv               = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/statistics/{sample}.npatterns-{npatterns}.pairwise_results.csv",
+        dotplot                    = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/markers/{sample}.npatterns-{npatterns}.dotplot.png",
+        png_specificity_patterns   = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.plot_patterns.png",
+        png_specificity_subclones  = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.plot_subclones.png",
+        png_enrich_unique          = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_unique.png",
+        png_overr_unique           = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_unique.png",
+        png_enrich_heatmap         = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_heatmap.png",
+        png_overr_heatmap          = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_heatmap.png",
+        png_enrich_heatmap_manually = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_heatmap.png",
+        png_overr_heatmap_manually  = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/manually/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_heatmap.png",
+        umap_scrnaseq              = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/{sample}.npatterns-{npatterns}.UMAP_dominant_scrnaseq.png",
+        umap_scatacseq             = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/{sample}.npatterns-{npatterns}.UMAP_dominant_scatacseq.png",
+        umap_multimodal            = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/{sample}.npatterns-{npatterns}.UMAP_dominant_multimodal.png",
+        umap_nmf                   = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/{sample}.npatterns-{npatterns}.UMAP_dominant_nmf.png",
+        umap_nb_cells_bysubclones  = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/infos/{sample}.npatterns-{npatterns}.nb_cells_bysubclones.png",
+        umap_nb_cells_bypatterns   = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/dominant/infos/{sample}.npatterns-{npatterns}.nb_cells_bypatterns.png",
+        weight_scrnaseq            = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_scrnaseq.png",
+        weight_scatacseq           = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_scatacseq.png",
+        weight_multimodal          = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_multimodal.png",
+        weight_nmf                 = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_nmf.png",
+    output:
+        html = report(
+            config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/report/{sample}.npatterns-{npatterns}.report.html",
+            labels={"Sample": "{sample}", "Patterns": "{npatterns}"}
+        )
+    params:
+        outdir    = config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/report",
+        sample    = "{sample}",
+        npatterns = "{npatterns}"
+    resources:
+        render_slot = 1
+    log:
+        "logs/{sample}/{sample}-{npatterns}-report.log"
+    benchmark:
+        "benchmarks/{sample}/{sample}-{npatterns}-report.tsv"
+    conda:
+        "envs/quarto.yml"
+    shell:
+        """
+        mkdir -p {params.outdir}
+        export XDG_CACHE_HOME=$(mktemp -d)
+        quarto render scripts/report_cogaps.qmd \
+            --to html \
+            --output-dir {params.outdir} \
+            --execute \
+            --no-cache \
+            -P sample="{params.sample}" \
+            -P npatterns="{params.npatterns}" \
+            -P contrib_cells="{input.contrib_cells}" \
+            -P contrib_genes="{input.contrib_genes}" \
+            -P markers_excel="{input.markers_excel}" \
+            -P enrich_csv="{input.enrich_csv}" \
+            -P overr_csv="{input.overr_csv}" \
+            -P kw_csv="{input.kw_csv}" \
+            -P pairwise_csv="{input.pairwise_csv}" \
+            -P dotplot="{input.dotplot}" \
+            -P png_specificity_patterns="{input.png_specificity_patterns}" \
+            -P png_specificity_subclones="{input.png_specificity_subclones}" \
+            -P png_enrich_unique="{input.png_enrich_unique}" \
+            -P png_overr_unique="{input.png_overr_unique}" \
+            -P png_enrich_heatmap="{input.png_enrich_heatmap}" \
+            -P png_overr_heatmap="{input.png_overr_heatmap}" \
+            -P png_enrich_heatmap_manually="{input.png_enrich_heatmap_manually}" \
+            -P png_overr_heatmap_manually="{input.png_overr_heatmap_manually}" \
+            -P umap_scrnaseq="{input.umap_scrnaseq}" \
+            -P umap_scatacseq="{input.umap_scatacseq}" \
+            -P umap_multimodal="{input.umap_multimodal}" \
+            -P umap_nmf="{input.umap_nmf}" \
+            -P umap_nb_cells_bysubclones="{input.umap_nb_cells_bysubclones}" \
+            -P umap_nb_cells_bypatterns="{input.umap_nb_cells_bypatterns}" \
+            -P weight_scrnaseq="{input.weight_scrnaseq}" \
+            -P weight_scatacseq="{input.weight_scatacseq}" \
+            -P weight_multimodal="{input.weight_multimodal}" \
+            -P weight_nmf="{input.weight_nmf}" \
+            2> {log}
+        rm -rf $XDG_CACHE_HOME
+        """

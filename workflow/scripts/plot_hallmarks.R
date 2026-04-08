@@ -48,7 +48,7 @@ for (p in pattern_plot_list) {
   print(p)
 }
 dev.off()
-message("PDF généré : ", output_pdf_enrichment)
+
 
 # ============================
 # Overrepresentation
@@ -87,5 +87,5 @@ for (p in pattern_plot_list) {
   print(p)
 }
 dev.off()
-message("PDF généré : ", output_pdf_overrep)
+
 

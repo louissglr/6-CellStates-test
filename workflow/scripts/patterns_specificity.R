@@ -1,16 +1,18 @@
 suppressPackageStartupMessages({
-  library(Seurat)
   library(tidyverse)
   library(ggpubr)
 })
 
+# Inputs / outputs
 contributions_file <- snakemake@input[["contributions_file"]]
 clusters_file <- snakemake@input[["subclone"]]
-output_pdf <- snakemake@output[["pdf"]]
-sample_name <- snakemake@wildcards[["sample"]]
-n_patterns <- as.integer(snakemake@wildcards[["npatterns"]])
 
+output_png1 <- snakemake@output[["png1"]]
+output_png2 <- snakemake@output[["png2"]]
+
+# -------------------
 # Lecture des fichiers
+# -------------------
 contrib <- read.table(
   contributions_file,
   header = TRUE,
@@ -30,11 +32,15 @@ clusters <- read.table(
     subclone = factor(subclone)
   )
 
-# Merge des contributions et clusters
+# -------------------
+# Merge
+# -------------------
 contrib2 <- contrib %>%
   left_join(clusters, by = "barcode")
 
-# Conversion en format long + correction de l'ordre des patterns
+# -------------------
+# Format long
+# -------------------
 contrib_long <- contrib2 %>%
   pivot_longer(
     cols = starts_with("Pattern_"),
@@ -43,88 +49,25 @@ contrib_long <- contrib2 %>%
   ) %>%
   mutate(
     subclone = factor(subclone),
-    Pattern = factor(
-      Pattern,
-      levels = paste0("Pattern_", 1:length(unique(Pattern)))
-    )
+    Pattern = factor(Pattern)
   )
 
 # -------------------
-# Version 1 : subclone vs Weight
+# Boxplot 1 : comparaison des patterns
 # -------------------
-v1 <- ggplot(contrib_long, aes(x = subclone, y = Weight, fill = Pattern)) +
-  geom_boxplot(outlier.size = 0.5) +
-  labs(
-    x = "Subclone",
-    y = "Weight",
-    title = paste(
-      "Pattern distribution per subclone\nSample:",
-      sample_name,
-      "- n_patterns:",
-      n_patterns
-    )
-  ) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-# -------------------
-# Version 2 : Pattern vs Weight
-# -------------------
-v2 <- ggplot(contrib_long, aes(x = Pattern, y = Weight, fill = subclone)) +
-  geom_boxplot(outlier.size = 0.5) +
-  labs(
-    x = "Pattern",
-    y = "Weight",
-    title = paste(
-      "Subclone distribution per pattern\nSample:",
-      sample_name,
-      "- n_patterns:",
-      n_patterns
-    )
-  ) +
-  theme_classic() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-# -------------------
-# Version 3 : distribution des poids par pattern
-# -------------------
-v3 <- ggplot(contrib_long, aes(x = Pattern, y = Weight, fill = Pattern)) +
-  geom_boxplot(outlier.size = 0.5) +
-  labs(
-    x = "Pattern",
-    y = "Weight",
-    title = paste(
-      "Weight Distribution per Pattern\nSample:",
-      sample_name,
-      "- n_patterns:",
-      n_patterns
-    )
-  ) +
-  theme_classic() +
-  theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
-    legend.position = "none"
-  )
-
-# -------------------
-# Plots ggpubr avec tests statistiques
-# -------------------
-contrib_long$Pattern <- as.factor(contrib_long$Pattern)
-
-# Comparaison des patterns
 bxp <- ggboxplot(
   contrib_long,
   x = "Pattern",
   y = "Weight",
   color = "Pattern",
   palette = "npg",
-  outlier.size = 0.5,   
-  legend = "none"       
+  outlier.size = 0.5,
+  legend = "none"
 ) +
-stat_compare_means(
+  stat_compare_means(
     method = "kruskal.test",
     label = "p.format"
-  ) + 
+  ) +
   geom_pwc(
     method = "wilcox.test",
     p.adjust.method = "BH",
@@ -132,7 +75,9 @@ stat_compare_means(
     hide.ns = TRUE
   )
 
-# Comparaison des subclones par pattern
+# -------------------
+# Boxplot 2 : subclones par pattern
+# -------------------
 bxp2 <- ggboxplot(
   contrib_long,
   x = "subclone",
@@ -140,10 +85,10 @@ bxp2 <- ggboxplot(
   color = "subclone",
   palette = "npg",
   facet.by = "Pattern",
-  outlier.size = 0.5,   
-  legend = "none"       
-) + 
-stat_compare_means(
+  outlier.size = 0.5,
+  legend = "none"
+) +
+  stat_compare_means(
     method = "kruskal.test",
     label = "p.format",
     label.y.npc = "top"
@@ -156,16 +101,20 @@ stat_compare_means(
   )
 
 # -------------------
-# Sauvegarde des plots dans l'ordre souhaité
+# Export PNG
 # -------------------
-pdf(output_pdf, width = 14, height = 10)
+ggsave(
+  filename = output_png1,
+  plot = bxp,
+  width = 14,
+  height = 10,
+  dpi = 150
+)
 
-print(v3)   # anciennement v3 -> en premier
-print(v2)
-print(v1)   # anciennement v1 -> en troisième
-print(bxp)
-print(bxp2)
-
-dev.off()
-
-message("End: ", output_pdf)
+ggsave(
+  filename = output_png2,
+  plot = bxp2,
+  width = 14,
+  height = 10,
+  dpi = 150
+)
