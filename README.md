@@ -4,7 +4,6 @@
 nohup snakemake \
   --configfile ../config/config-glicid-scratch.yml \
   --profile profiles/default/ \
-  --rerun-triggers mtime \
   >> snake.out &
 ```
 
@@ -14,7 +13,6 @@ nohup snakemake \
 nohup snakemake \
   --configfile ../config/config-glicid-scratch.yml \
   --profile profiles/default/ \
-  --rerun-triggers mtime \
   --report /scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates-test/results/report.zip \
   >> snake.out &
 ```
