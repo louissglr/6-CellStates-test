@@ -21,6 +21,7 @@ knitr:
 params:
   sample: "SAMPLE"
   npatterns: 0
+  outdir: ""
   contrib_cells: ""
   contrib_genes: ""
   markers_excel: ""
@@ -97,21 +98,6 @@ include_graphics(params$png_specificity_subclones)
 #| fig-cap: "Marker genes dotplot"
 #| out-width: 100%
 include_graphics(params$dotplot)
-```
-
-### Table
-```{r tbl-markers}
-sheets <- excel_sheets(params$markers_excel)
-for (sh in sheets) {
-    df <- read_excel(params$markers_excel, sheet = sh)
-    cat("####", sh, "\n\n")
-    print(
-        kable(head(df, 30), caption = paste("Sheet:", sh)) |>
-            kable_styling(bootstrap_options = c("striped", "hover")) |>
-            scroll_box(height = "300px")
-    )
-    cat("\n\n")
-}
 ```
 
 :::
