@@ -6,7 +6,6 @@ library(circlize)
 library(stringr)
 library(grid)  # pour gpar
 
-# Inputs/outputs Snakemake
 input_csv_enrichment  <- snakemake@input[["csv_enrich"]]
 input_csv_overrep     <- snakemake@input[["csv_overr"]]
 
@@ -16,7 +15,6 @@ output_png_overrep    <- snakemake@output[["png_heatmap_overr"]]
 sample_name <- snakemake@wildcards[["sample"]]
 n_patterns  <- as.integer(snakemake@wildcards[["npatterns"]])
 
-# Paramètres
 max_color_val <- 50
 sig_threshold <- -10*log10(0.05)
 
@@ -25,7 +23,6 @@ generate_heatmap <- function(input_csv, output_png, title_suffix) {
   hallmarks_df <- read.csv(input_csv, stringsAsFactors = FALSE) %>%
     mutate(gene.set = str_replace(gene.set, "^HALLMARK[_ ]?", ""))
   
-  # Pivot et filtrage des hallmarks significatifs
   heatmap_df <- hallmarks_df %>%
     select(gene.set, Pattern, neg.log.padj) %>%
     mutate(Pattern = factor(Pattern, levels = sort(unique(Pattern)))) %>%
@@ -36,18 +33,16 @@ generate_heatmap <- function(input_csv, output_png, title_suffix) {
     ) %>%
     (\(df) df[rowSums(df[, -1] >= sig_threshold) > 0, ])()
   
-  # Conversion en matrice
   heatmap_mat <- heatmap_df %>%
     column_to_rownames("gene.set") %>%
     as.matrix()
   
   colnames(heatmap_mat) <- str_replace(colnames(heatmap_mat), "^Pattern_", "")
   
-  # Cap valeurs max et mise à zéro si non significatif
   heatmap_mat[heatmap_mat > max_color_val] <- max_color_val
   heatmap_mat[heatmap_mat < sig_threshold] <- 0
   
-  # Gradient couleur
+
   col_fun <- colorRamp2(
     c(0, sig_threshold, sig_threshold + 0.001, max_color_val),
     c("white", "white", "#ffe5e5", "darkred")

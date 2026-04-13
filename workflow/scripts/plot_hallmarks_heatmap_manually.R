@@ -17,7 +17,7 @@ output_png_overrep    <- snakemake@output[["png_heatmap_overr"]]
 
 sample_name <- snakemake@wildcards[["sample"]]
 
-# Paramètres
+
 max_color_val <- 50
 sig_threshold <- -10 * log10(0.05)
 
@@ -90,7 +90,7 @@ generate_heatmap <- function(input_csv, output_png, title_suffix) {
   dev.off()
 }
 
-# Appels
+
 generate_heatmap(
   input_csv_enrichment,
   output_png_enrich,

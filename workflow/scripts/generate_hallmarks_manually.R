@@ -5,16 +5,11 @@ suppressPackageStartupMessages({
   library(readr)
 })
 
-set.seed(123)
+set.seed(123) #fix seed
 
-# ----------------------------
-# PARAMETRES
-# ----------------------------
 top_n <- 100
 
-# ----------------------------
-# Détection automatique de l'espèce
-# ----------------------------
+#Function to detect species (human or mouse)
 detect_species <- function(gene_names) {
   gene_names <- unique(gene_names)
   human_prop <- mean(gene_names == toupper(gene_names), na.rm = TRUE)
@@ -30,17 +25,14 @@ detect_species <- function(gene_names) {
   }
 }
 
-# ----------------------------
+
 # Snakemake inputs/outputs
-# ----------------------------
+
 contrib_path   <- snakemake@input[["contrib_txt"]]
 output_gsea    <- snakemake@output[["gsea_csv"]]
 output_ora     <- snakemake@output[["ora_csv"]]
 sample_id      <- snakemake@wildcards[["sample"]]
 
-# ----------------------------
-# Lecture du fichier contrib
-# ----------------------------
 contrib_df <- read.delim(contrib_path, check.names = FALSE)
 
 rownames(contrib_df) <- contrib_df$gene
@@ -50,9 +42,7 @@ gene_names <- rownames(contrib_df)
 species_detected <- detect_species(gene_names)
 message("Espèce détectée : ", species_detected)
 
-# ----------------------------
 # MSigDB Hallmark
-# ----------------------------
 msigdbr_df <- msigdbr(
   species = species_detected,
   collection = "H"
@@ -62,15 +52,11 @@ hallmark_t2g <- msigdbr_df %>%
   dplyr::select(gs_name, gene_symbol) %>%
   distinct()
 
-# ----------------------------
-# LISTES RESULTATS
-# ----------------------------
+
 gsea_list <- list()
 ora_list  <- list()
 
-# ----------------------------
-# BOUCLE PRINCIPALE
-# ----------------------------
+
 for (prog in colnames(contrib_df)) {
 
   gene_scores <- contrib_df[[prog]]
@@ -100,9 +86,7 @@ for (prog in colnames(contrib_df)) {
     gsea_list[[prog]] <- df
   }
 
-  # ============================
-  # ORA (top N genes)
-  # ============================
+  # ORA (top N genes defined in parameters)
   top_genes <- names(gene_scores)[1:min(top_n, length(gene_scores))]
 
   ora_res <- tryCatch(
@@ -124,9 +108,7 @@ for (prog in colnames(contrib_df)) {
   }
 }
 
-# ----------------------------
 # EXPORT GSEA
-# ----------------------------
 if (length(gsea_list) == 0) {
   empty_df <- data.frame(
     sample = character(),
@@ -148,9 +130,7 @@ if (length(gsea_list) == 0) {
   write.csv(gsea_df, output_gsea, row.names = FALSE)
 }
 
-# ----------------------------
 # EXPORT ORA
-# ----------------------------
 if (length(ora_list) == 0) {
   empty_df <- data.frame(
     sample = character(),
@@ -171,9 +151,3 @@ if (length(ora_list) == 0) {
   ora_df <- ora_df[order(ora_df$program, ora_df$p.adjust), ]
   write.csv(ora_df, output_ora, row.names = FALSE)
 }
-
-# ----------------------------
-# LOG FINAL
-# ----------------------------
-message("GSEA exportée : ", output_gsea)
-message("ORA exportée : ", output_ora)

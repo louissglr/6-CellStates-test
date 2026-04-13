@@ -8,10 +8,6 @@ suppressPackageStartupMessages({
   library(grid)
 })
 
-# --------------------------------------------------
-# INPUTS
-# --------------------------------------------------
-
 contrib_file <- snakemake@input[["contributions"]]
 umap_file    <- snakemake@input[["umap"]]
 output_png   <- snakemake@output[["png"]]
@@ -21,10 +17,7 @@ dataset      <- snakemake@params[["dataset"]]
 #if (!dir.exists(dirname(output_pdf)))
 #  dir.create(dirname(output_pdf), recursive = TRUE)
 
-# --------------------------------------------------
 # 1. Read Contributions
-# --------------------------------------------------
-
 contrib_df <- read_tsv(contrib_file, guess_max = 1e6)
 
 colnames(contrib_df) <- tolower(colnames(contrib_df))
@@ -42,10 +35,7 @@ pattern_cols <- setdiff(colnames(contrib_df), exclude_cols)
 if (length(pattern_cols) == 0)
   stop("No pattern columns detected")
 
-# --------------------------------------------------
 # 2. Read UMAP
-# --------------------------------------------------
-
 clean_umap <- function(file){
 
   df <- read_tsv(file, guess_max = 1e6)
@@ -76,10 +66,8 @@ clean_umap <- function(file){
 
 umap_df <- clean_umap(umap_file)
 
-# --------------------------------------------------
-# 3. Merge + Long Format (Weights)
-# --------------------------------------------------
 
+# 3. Merge + Long Format (Weights)
 plot_df <- umap_df |>
   left_join(
     contrib_df |> select(all_of(barcode_col), all_of(pattern_cols)),
@@ -97,20 +85,15 @@ plot_long <- plot_df |>
 pattern_names <- unique(plot_long$Pattern)
 n_patterns <- length(pattern_names)
 
-# --------------------------------------------------
-# 4. FIXED PALETTE (Same as your dominant script)
-# --------------------------------------------------
-
+# 4. FIXED PALETTE (Same as dominant script)
 pattern_colors <- colorRampPalette(
   brewer.pal(min(n_patterns,12), "Set3")
 )(n_patterns)
 
 names(pattern_colors) <- pattern_names
 
-# --------------------------------------------------
-# 5. Function Theme With Axes Arrows
-# --------------------------------------------------
 
+# 5. Function Theme With Axes Arrows
 add_axes_arrows <- function(p, df, xcol, ycol){
 
   x_min <- min(df[[xcol]], na.rm = TRUE)
@@ -154,10 +137,7 @@ add_axes_arrows <- function(p, df, xcol, ycol){
              angle = 90)
 }
 
-# --------------------------------------------------
 # 6. PLOT WEIGHTS WITH FACET
-# --------------------------------------------------
-
 p_weights <- ggplot(plot_long,
                     aes(x = UMAP1,
                         y = UMAP2,
@@ -177,15 +157,12 @@ p_weights <- ggplot(plot_long,
     color = "Weight"
   )
 
-# Ajouter les flèches axes (calcul global sur données UMAP)
 p_weights <- add_axes_arrows(p_weights,
                              plot_long,
                              "UMAP1",
                              "UMAP2")
 
-# --------------------------------------------------
-# 7. EXPORT
-# --------------------------------------------------
+
 png(output_png, width = 10, height = 8, units = "in", res = 300)
 print(p_weights)
 dev.off()

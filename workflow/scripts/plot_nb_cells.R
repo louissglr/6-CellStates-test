@@ -5,10 +5,6 @@ suppressPackageStartupMessages({
   library(forcats)
 })
 
-## --------------------------------------------------
-## Inputs
-## --------------------------------------------------
-
 contrib_file <- snakemake@input[["contrib"]] 
 subclones_files <- snakemake@input[["subclones"]]
 
@@ -16,10 +12,6 @@ output_png  <- snakemake@output[["png1"]]       # Plot subclone -> pattern
 output_png2 <- snakemake@output[["png2"]]     # Plot pattern -> subclone
 
 sample_name <- snakemake@wildcards[["sample"]]
-
-## --------------------------------------------------
-## Read data
-## --------------------------------------------------
 
 contrib <- read.table(contrib_file, header = TRUE)
 
@@ -38,10 +30,6 @@ df <- contrib |>
     by = "barcode"
   )
 
-## --------------------------------------------------
-## Plot 1 : proportions par subclone
-## --------------------------------------------------
-
 df_prop <- df |>
   group_by(subclone, dominant_pattern) |>
   summarise(n = n(), .groups = "drop") |>
@@ -49,7 +37,6 @@ df_prop <- df |>
   mutate(prop = n / sum(n)) |>
   ungroup()
 
-## Ordres
 df_prop <- df_prop |>
   mutate(
     dominant_pattern = fct_reorder(
@@ -62,7 +49,6 @@ df_prop <- df_prop |>
     )
   )
 
-## Annotation n cellules / subclone
 df_counts <- df |>
   count(subclone, name = "n_cells") |>
   mutate(
@@ -104,9 +90,6 @@ png(output_png, width = 10, height = 8, units = "in", res = 300)
 print(p1)
 dev.off()
 
-## --------------------------------------------------
-## Plot 2 : proportions par pattern (inverse)
-## --------------------------------------------------
 
 df_prop_pattern <- df |>
   group_by(dominant_pattern, subclone) |>

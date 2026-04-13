@@ -48,6 +48,7 @@ params:
   weight_scatacseq: ""
   weight_multimodal: ""
   weight_nmf: ""
+  benchmark_tsv: ""
 ---
 ```{r setup, include=FALSE}
 suppressPackageStartupMessages({
@@ -63,123 +64,81 @@ n <- params$npatterns
 
 ## Overview
 ```{r tbl-params}
+n_learned <- NA
+
+if (file.exists(params$contrib_cells) && params$contrib_cells != "") {
+  contrib <- read_tsv(params$contrib_cells, show_col_types = FALSE)
+  n_learned <- sum(grepl("^Pattern", colnames(contrib)))
+}
+
 data.frame(
-    Parameter = c("Sample", "Number of patterns"),
-    Value     = c(s, as.character(n))
-) |> kable() |> kable_styling(full_width = FALSE)
+    Parameter = c("Sample", "Number of targeted patterns", "Number of learned patterns"),
+    Value     = c(s, as.character(n), as.character(n_learned))
+) |> 
+  kable(caption = "CoGAPS patterns") |> 
+  kable_styling(full_width = FALSE)
 ```
 
-## Pattern specificity
+```{r tbl-benchmark}
+if (file.exists(params$benchmark_tsv) && params$benchmark_tsv != "") {
+
+  read_tsv(params$benchmark_tsv, show_col_types = FALSE) |>
+    kable(digits = 2, caption = "CoGAPS benchmark") |>
+    kable_styling(bootstrap_options = c("striped", "hover"))
+
+}
+```
+
+## Contributions
 
 ::: {.panel-tabset}
 
-### By pattern
-```{r fig-specificity-patterns}
-#| fig-cap: "Pattern specificity"
-#| out-width: 100%
-include_graphics(params$png_specificity_patterns)
-```
-
-### By subclone
-```{r fig-specificity-subclones}
-#| fig-cap: "Subclone specificity"
-#| out-width: 100%
-include_graphics(params$png_specificity_subclones)
-```
-
-:::
-
-## Markers
-
-::: {.panel-tabset}
-
-### Dotplot
-```{r fig-dotplot}
-#| fig-cap: "Marker genes dotplot"
-#| out-width: 100%
-include_graphics(params$dotplot)
-```
-
-:::
-
-## Hallmarks
-
-::: {.panel-tabset}
-
-### Enrichment — unique
-```{r fig-enrich-unique}
-#| fig-cap: "Hallmarks enrichment (unique)"
-#| out-width: 100%
-include_graphics(params$png_enrich_unique)
-```
-
-### Enrichment — heatmap (get_function)
-```{r fig-enrich-heatmap}
-#| fig-cap: "Hallmarks enrichment heatmap"
-#| out-width: 100%
-include_graphics(params$png_enrich_heatmap)
-```
-
-### Enrichment — heatmap (manually)
-```{r fig-enrich-heatmap-manually}
-#| fig-cap: "Hallmarks enrichment heatmap (manually)"
-#| out-width: 100%
-include_graphics(params$png_enrich_heatmap_manually)
-```
-
-### Overrepresentation — unique
-```{r fig-overr-unique}
-#| fig-cap: "Hallmarks overrepresentation (unique)"
-#| out-width: 100%
-include_graphics(params$png_overr_unique)
-```
-
-### Overrepresentation — heatmap (get_function)
-```{r fig-overr-heatmap}
-#| fig-cap: "Hallmarks overrepresentation heatmap"
-#| out-width: 100%
-include_graphics(params$png_overr_heatmap)
-```
-
-### Overrepresentation — heatmap (manually)
-```{r fig-overr-heatmap-manually}
-#| fig-cap: "Hallmarks overrepresentation heatmap (manually)"
-#| out-width: 100%
-include_graphics(params$png_overr_heatmap_manually)
-```
-
-### Tables
-```{r tbl-enrich}
-read_csv(params$enrich_csv, show_col_types = FALSE) |>
-    kable(caption = "Hallmarks enrichment") |>
-    kable_styling(bootstrap_options = c("striped", "hover")) |>
-    scroll_box(height = "350px")
-```
-```{r tbl-overr}
-read_csv(params$overr_csv, show_col_types = FALSE) |>
-    kable(caption = "Hallmarks overrepresentation") |>
-    kable_styling(bootstrap_options = c("striped", "hover")) |>
-    scroll_box(height = "350px")
-```
-
-:::
-
-## Statistics
-
-::: {.panel-tabset}
-
-### Kruskal-Wallis
-```{r tbl-kw}
-read_csv(params$kw_csv, show_col_types = FALSE) |>
-    kable() |> kable_styling(bootstrap_options = c("striped", "hover"))
-```
-
-### Pairwise comparisons
-```{r tbl-pairwise}
-read_csv(params$pairwise_csv, show_col_types = FALSE) |>
-    kable() |>
+### Cells
+```{r tbl-contrib-cells}
+read_tsv(params$contrib_cells, show_col_types = FALSE) |>
+    head(50) |>
+    kable(caption = "P matrix (sampleFactors)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
     scroll_box(height = "400px")
+```
+
+### Genes
+```{r tbl-contrib-genes}
+read_tsv(params$contrib_genes, show_col_types = FALSE) |>
+    head(50) |>
+    kable(caption = "A matrix (featureLoadings)") |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "400px")
+```
+
+:::
+
+## UMAP — Pattern weight
+
+::: {.panel-tabset}
+
+### scRNA-seq
+```{r fig-weight-scrna}
+#| out-width: 100%
+include_graphics(params$weight_scrnaseq)
+```
+
+### scATAC-seq
+```{r fig-weight-scatac}
+#| out-width: 100%
+include_graphics(params$weight_scatacseq)
+```
+
+### Multimodal
+```{r fig-weight-multi}
+#| out-width: 100%
+include_graphics(params$weight_multimodal)
+```
+
+### NMF
+```{r fig-weight-nmf}
+#| out-width: 100%
+include_graphics(params$weight_nmf)
 ```
 
 :::
@@ -224,58 +183,123 @@ include_graphics(params$umap_nb_cells_bysubclones)
 include_graphics(params$umap_nb_cells_bypatterns)
 ```
 
+
 :::
 
-## UMAP — Pattern weight
+
+
+## Pattern specificity
 
 ::: {.panel-tabset}
 
-### scRNA-seq
-```{r fig-weight-scrna}
+### By pattern
+```{r fig-specificity-patterns}
+#| fig-cap: "Pattern specificity"
 #| out-width: 100%
-include_graphics(params$weight_scrnaseq)
+include_graphics(params$png_specificity_patterns)
 ```
 
-### scATAC-seq
-```{r fig-weight-scatac}
+### By subclone
+```{r fig-specificity-subclones}
+#| fig-cap: "Subclone specificity"
 #| out-width: 100%
-include_graphics(params$weight_scatacseq)
-```
-
-### Multimodal
-```{r fig-weight-multi}
-#| out-width: 100%
-include_graphics(params$weight_multimodal)
-```
-
-### NMF
-```{r fig-weight-nmf}
-#| out-width: 100%
-include_graphics(params$weight_nmf)
+include_graphics(params$png_specificity_subclones)
 ```
 
 :::
 
-## Contributions
+## Statistics
 
 ::: {.panel-tabset}
 
-### Cells
-```{r tbl-contrib-cells}
-read_tsv(params$contrib_cells, show_col_types = FALSE) |>
-    head(50) |>
-    kable() |>
-    kable_styling(bootstrap_options = c("striped", "hover")) |>
-    scroll_box(height = "400px")
+### Kruskal-Wallis
+```{r tbl-kw}
+read_csv(params$kw_csv, show_col_types = FALSE) |>
+    kable() |> kable_styling(bootstrap_options = c("striped", "hover"))
 ```
 
-### Genes
-```{r tbl-contrib-genes}
-read_tsv(params$contrib_genes, show_col_types = FALSE) |>
-    head(50) |>
+### Pairwise comparisons
+```{r tbl-pairwise}
+read_csv(params$pairwise_csv, show_col_types = FALSE) |>
     kable() |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
     scroll_box(height = "400px")
 ```
 
 :::
+
+## Markers
+
+::: {.panel-tabset}
+
+### Dotplot
+```{r fig-dotplot}
+#| fig-cap: "Marker genes dotplot by fixing dominant pattern"
+#| out-width: 100%
+include_graphics(params$dotplot)
+```
+
+:::
+
+## Hallmarks
+
+::: {.panel-tabset}
+
+### Enrichment — heatmap (get_function)
+```{r fig-enrich-heatmap}
+#| fig-cap: "Hallmarks enrichment heatmap"
+#| out-width: 100%
+include_graphics(params$png_enrich_heatmap)
+```
+
+### Enrichment — heatmap (manually)
+```{r fig-enrich-heatmap-manually}
+#| fig-cap: "Hallmarks enrichment heatmap (manually)"
+#| out-width: 100%
+include_graphics(params$png_enrich_heatmap_manually)
+```
+### Enrichment — unique
+```{r fig-enrich-unique}
+#| fig-cap: "Hallmarks enrichment (unique)"
+#| out-width: 100%
+include_graphics(params$png_enrich_unique)
+```
+
+### Overrepresentation — heatmap (get_function)
+```{r fig-overr-heatmap}
+#| fig-cap: "Hallmarks overrepresentation heatmap"
+#| out-width: 100%
+include_graphics(params$png_overr_heatmap)
+```
+
+### Overrepresentation — heatmap (manually)
+```{r fig-overr-heatmap-manually}
+#| fig-cap: "Hallmarks overrepresentation heatmap (manually)"
+#| out-width: 100%
+include_graphics(params$png_overr_heatmap_manually)
+```
+### Overrepresentation — unique
+```{r fig-overr-unique}
+#| fig-cap: "Hallmarks overrepresentation (unique)"
+#| out-width: 100%
+include_graphics(params$png_overr_unique)
+```
+
+### Tables
+```{r tbl-enrich}
+read_csv(params$enrich_csv, show_col_types = FALSE) |>
+    select(-leadingEdge) |>
+    kable(caption = "Hallmarks enrichment") |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "350px")
+```
+```{r tbl-overr}
+read_csv(params$overr_csv, show_col_types = FALSE) |>
+    kable(caption = "Hallmarks overrepresentation") |>
+    kable_styling(bootstrap_options = c("striped", "hover")) |>
+    scroll_box(height = "350px")
+```
+
+:::
+
+

@@ -3,17 +3,15 @@ suppressPackageStartupMessages({
   library(rstatix)
 })
 
-# ---- Inputs ----
 contributions_file <- snakemake@input[["contributions_file"]]
 clusters_file <- snakemake@input[["subclone"]]
 kw_output_csv <- snakemake@output[["kw_csv"]]
 pairwise_output_csv <- snakemake@output[["pairwise_csv"]]
 
-# ---- Metadata ----
+# Metadata 
 sample_name <- snakemake@wildcards[["sample"]]
 n_patterns <- as.integer(snakemake@wildcards[["npatterns"]])
 
-# ---- Read contributions ----
 contrib <- read.table(
   contributions_file,
   header = TRUE,
@@ -56,11 +54,10 @@ kw_results <- contrib_long |>
     n_patterns = n_patterns
   )
 
-# ---- Save Kruskal-Wallis results ----
 write.csv(kw_results, kw_output_csv, row.names = FALSE)
 message("Kruskal-Wallis results written to: ", kw_output_csv)
 
-# ---- Pairwise Wilcoxon post-hoc (per Pattern) ----
+# Pairwise Wilcoxon post-hoc (per Pattern) 
 pairwise_results <- contrib_long %>%
   group_by(Pattern) %>%
   summarise(
@@ -93,6 +90,5 @@ pairwise_results <- contrib_long %>%
   select(Pattern, pw_df) %>%
   unnest(pw_df)
 
-# ---- Save pairwise Wilcoxon results ----
 write.csv(pairwise_results, pairwise_output_csv, row.names = FALSE)
 message("Pairwise Wilcoxon results written to: ", pairwise_output_csv)

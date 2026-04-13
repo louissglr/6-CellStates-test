@@ -115,7 +115,8 @@ rule cogaps:
     input:
         tumor_rna_seuratobj=config["dataDir"] + "/{sample}/{sample}.scrnaseq.icagen-filtered.seurat-object.Rds"
     output:
-        cogaps_rds=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/object/{sample}.npatterns-{npatterns}.cogaps-object.Rds"
+        cogaps_rds=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/object/{sample}.npatterns-{npatterns}.cogaps-object.Rds",
+        benchmark="benchmarks/{sample}/{sample}-{npatterns}.tsv"
     log:
         "logs/{sample}/{sample}-{npatterns}.log"
     benchmark:
@@ -447,8 +448,14 @@ rule render_report:
         weight_scatacseq=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_scatacseq.png",
         weight_multimodal=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_multimodal.png",
         weight_nmf=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/umap/weight/{sample}.npatterns-{npatterns}.UMAP_weight_nmf.png",
+        benchmark_tsv="/scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates-test/workflow/benchmarks/{sample}/{sample}-{npatterns}.tsv",
+
     output:
-        html=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/report/{sample}.npatterns-{npatterns}.report.html"
+        html=report(
+            config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/report/{sample}.npatterns-{npatterns}.report.html",
+            category="Results",
+            labels={"sample": "{sample}"}
+        )
     params:
         outdir=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/report",
         sample="{sample}",
@@ -495,6 +502,7 @@ rule render_report:
             -P weight_scatacseq:{input.weight_scatacseq} \
             -P weight_multimodal:{input.weight_multimodal} \
             -P weight_nmf:{input.weight_nmf} \
+            -P benchmark_tsv:{input.benchmark_tsv} \
         > "$LOGFILE" 2>&1
         rm -f "{params.outdir}/report_cogaps.qmd"
         """

@@ -6,9 +6,7 @@ suppressPackageStartupMessages({
   library(ggplot2)
 })
 
-# =========================================================
-# INPUT / OUTPUT
-# =========================================================
+
 input_csv_enrichment <- snakemake@input[["csv_enrich"]]
 input_csv_overr      <- snakemake@input[["csv_overr"]]
 output_png_enrich    <- snakemake@output[["png_enrich"]]
@@ -20,9 +18,7 @@ n_patterns  <- as.integer(snakemake@wildcards[["npatterns"]])
 padj_cutoff <- 0.05
 threshold   <- -10 * log10(padj_cutoff)
 
-# =========================================================
-# SAFE READER
-# =========================================================
+
 safe_read <- function(path){
   if(!file.exists(path)){
     stop(paste("Input file does not exist:", path))
@@ -99,21 +95,15 @@ generate_combined_plot <- function(df, title_prefix){
   return(p_combined)
 }
 
-# =========================================================
-# READ CSV
-# =========================================================
+# Read CSV
 df_enrich <- safe_read(input_csv_enrichment)
 df_overr  <- safe_read(input_csv_overr)
 
-# =========================================================
-# GENERATE PLOTS
-# =========================================================
+# Generate plots
 p_enrich <- generate_combined_plot(df_enrich, "Enrichment")
 p_overr  <- generate_combined_plot(df_overr,  "Overrepresentation")
 
-# =========================================================
-# SAVE PDFs
-# =========================================================
+
 png(output_png_enrich, width = 10, height = 8, units = "in", res = 300)
 if(!is.null(p_enrich)) print(p_enrich)
 dev.off()
