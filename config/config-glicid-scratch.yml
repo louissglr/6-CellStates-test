@@ -9,6 +9,9 @@ subcloneDir: "/LAB-DATA/GLiCID/projects/CRCI2NA_DATA/ICAGEN/MYRACLE/Analyses/scM
 
 patternsPerSample: "/scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates-test/workflow/nb_patterns_per_sample.tsv"
 
+reportqmd: "/scratch/nautilus/users/sanglier-l@univ-nantes.fr/6-CellStates-test/workflow/scripts/report_cogaps.qmd"
+
 samples:
   - MM-01-0274-T
   - MM-01-0282-T2
+  - MM-01-0167-T

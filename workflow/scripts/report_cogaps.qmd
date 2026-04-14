@@ -75,7 +75,7 @@ data.frame(
     Parameter = c("Sample", "Number of targeted patterns", "Number of learned patterns"),
     Value     = c(s, as.character(n), as.character(n_learned))
 ) |> 
-  kable(caption = "CoGAPS patterns") |> 
+  kable(caption = "Sample information") |> 
   kable_styling(full_width = FALSE)
 ```
 
@@ -99,7 +99,8 @@ read_tsv(params$contrib_cells, show_col_types = FALSE) |>
     head(50) |>
     kable(caption = "P matrix (sampleFactors)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
-    scroll_box(height = "400px")
+    scroll_box(height = "400px")|>
+    footnote(general = "Only the top 50 rows are shown.")
 ```
 
 ### Genes
@@ -108,7 +109,8 @@ read_tsv(params$contrib_genes, show_col_types = FALSE) |>
     head(50) |>
     kable(caption = "A matrix (featureLoadings)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
-    scroll_box(height = "400px")
+    scroll_box(height = "400px")|>
+    footnote(general = "Only the top 50 rows are shown.")
 ```
 
 :::
@@ -301,5 +303,3 @@ read_csv(params$overr_csv, show_col_types = FALSE) |>
 ```
 
 :::
-
-
