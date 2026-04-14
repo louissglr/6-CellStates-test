@@ -113,7 +113,10 @@ read_tsv(params$contrib_cells, show_col_types = FALSE) |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
     scroll_box(height = "400px")
 
-knitr::asis_output("<p style='margin-top: 8px;'><em>Note:</em> Only the first 50 rows are shown.</p>")
+knitr::asis_output("
+<p style='margin-top: 8px;'><em>Note:</em> Only the first 50 rows are shown.</p>
+<p><em>Note:</em> The <code>dominant_pattern</code> column was added by assigning each cell to the pattern with the highest score across all patterns in the P matrix.</p>
+")
 ```
 
 ### Genes
@@ -135,24 +138,28 @@ knitr::asis_output("<p style='margin-top: 8px;'><em>Note:</em> Only the first 50
 
 ### scRNA-seq
 ```{r fig-weight-scrna}
+#| fig-cap: "scRNA-seq weight UMAP"
 #| out-width: 100%
 include_graphics(params$weight_scrnaseq)
 ```
 
 ### scATAC-seq
 ```{r fig-weight-scatac}
+#| fig-cap: "scATAC-seq weight UMAP"
 #| out-width: 100%
 include_graphics(params$weight_scatacseq)
 ```
 
 ### Multimodal
 ```{r fig-weight-multi}
+#| fig-cap: "Multimodal weight UMAP"
 #| out-width: 100%
 include_graphics(params$weight_multimodal)
 ```
 
 ### NMF
 ```{r fig-weight-nmf}
+#| fig-cap: "NMF weight UMAP (based on P matrix)"
 #| out-width: 100%
 include_graphics(params$weight_nmf)
 ```
@@ -165,36 +172,42 @@ include_graphics(params$weight_nmf)
 
 ### scRNA-seq
 ```{r fig-umap-scrna}
+#| fig-cap: "scRNA-seq dominant UMAP"
 #| out-width: 100%
 include_graphics(params$umap_scrnaseq)
 ```
 
 ### scATAC-seq
 ```{r fig-umap-scatac}
+#| fig-cap: "scATAC-seq dominant UMAP"
 #| out-width: 100%
 include_graphics(params$umap_scatacseq)
 ```
 
 ### Multimodal
 ```{r fig-umap-multi}
+#| fig-cap: "Multimodal dominant UMAP"
 #| out-width: 100%
 include_graphics(params$umap_multimodal)
 ```
 
 ### NMF
 ```{r fig-umap-nmf}
+#| fig-cap: "NMF dominant UMAP"
 #| out-width: 100%
 include_graphics(params$umap_nmf)
 ```
 
 ### Cell counts by subclone
 ```{r fig-nb-cells-subclones}
+#| fig-cap: "Cell counts by subclone"
 #| out-width: 100%
 include_graphics(params$umap_nb_cells_bysubclones)
 ```
 
 ### Cell counts by pattern
 ```{r fig-nb-cells-patterns}
+#| fig-cap: "Cell counts by dominant pattern"
 #| out-width: 100%
 include_graphics(params$umap_nb_cells_bypatterns)
 ```
@@ -249,8 +262,9 @@ read_csv(params$pairwise_csv, show_col_types = FALSE) |>
 ::: {.panel-tabset}
 
 ### Dotplot
+The marker genes were generated with the `patternMarker()` function from **CoGAPS**.
 ```{r fig-dotplot}
-#| fig-cap: "Marker genes dotplot by fixing dominant pattern"
+#| fig-cap: "Marker genes (top 5) by fixing dominant pattern"
 #| out-width: 100%
 include_graphics(params$dotplot)
 ```
@@ -262,6 +276,7 @@ include_graphics(params$dotplot)
 ::: {.panel-tabset}
 
 ### Enrichment — heatmap (get_function)
+The enrichment analysis was performed with the `getPatternGeneSet()` function from **CoGAPS**, with msigdbr hallmarks.
 ```{r fig-enrich-heatmap}
 #| fig-cap: "Hallmarks enrichment heatmap"
 #| out-width: 100%
@@ -269,6 +284,7 @@ include_graphics(params$png_enrich_heatmap)
 ```
 
 ### Enrichment — heatmap (manually)
+The enrichment analysis was performed with the `GSEA()` function from **ClusterProfiler**, with msigdbr hallmarks.
 ```{r fig-enrich-heatmap-manually}
 #| fig-cap: "Hallmarks enrichment heatmap (manually)"
 #| out-width: 100%
@@ -282,6 +298,7 @@ include_graphics(params$png_enrich_unique)
 ```
 
 ### Overrepresentation — heatmap (get_function)
+The overrepresentation analysis was performed with the `getPatternGeneSet()` function from **CoGAPS**, with msigdbr hallmarks.
 ```{r fig-overr-heatmap}
 #| fig-cap: "Hallmarks overrepresentation heatmap"
 #| out-width: 100%
@@ -289,6 +306,7 @@ include_graphics(params$png_overr_heatmap)
 ```
 
 ### Overrepresentation — heatmap (manually)
+The overrepresentation analysis was performed with the `enricher` function from **ClusterProfiler**, with msigdbr hallmarks.
 ```{r fig-overr-heatmap-manually}
 #| fig-cap: "Hallmarks overrepresentation heatmap (manually)"
 #| out-width: 100%
@@ -305,13 +323,13 @@ include_graphics(params$png_overr_unique)
 ```{r tbl-enrich}
 read_csv(params$enrich_csv, show_col_types = FALSE) |>
     select(-leadingEdge) |>
-    kable(caption = "Hallmarks enrichment") |>
+    kable(caption = "Hallmarks enrichment (get_function)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
     scroll_box(height = "350px")
 ```
 ```{r tbl-overr}
 read_csv(params$overr_csv, show_col_types = FALSE) |>
-    kable(caption = "Hallmarks overrepresentation") |>
+    kable(caption = "Hallmarks overrepresentation (get_function)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
     scroll_box(height = "350px")
 ```
