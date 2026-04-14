@@ -65,17 +65,29 @@ n <- params$npatterns
 ## Overview
 ```{r tbl-params}
 n_learned <- NA
+n_cells <- NA
 
 if (file.exists(params$contrib_cells) && params$contrib_cells != "") {
   contrib <- read_tsv(params$contrib_cells, show_col_types = FALSE)
   n_learned <- sum(grepl("^Pattern", colnames(contrib)))
+  n_cells <- nrow(contrib)
 }
 
 data.frame(
-    Parameter = c("Sample", "Number of targeted patterns", "Number of learned patterns"),
-    Value     = c(s, as.character(n), as.character(n_learned))
-) |> 
-  kable(caption = "Sample information") |> 
+    Parameter = c(
+      "Sample",
+      "Number of targeted patterns",
+      "Number of learned patterns",
+      "Number of cells"
+    ),
+    Value = c(
+      s,
+      as.character(n),
+      as.character(n_learned),
+      as.character(n_cells)
+    )
+) |>
+  kable(caption = "Sample information") |>
   kable_styling(full_width = FALSE)
 ```
 
@@ -99,8 +111,9 @@ read_tsv(params$contrib_cells, show_col_types = FALSE) |>
     head(50) |>
     kable(caption = "P matrix (sampleFactors)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
-    scroll_box(height = "400px")|>
-    footnote(general = "Only the top 50 rows are shown.")
+    scroll_box(height = "400px")
+
+knitr::asis_output("<p style='margin-top: 8px;'><em>Note:</em> Only the first 50 rows are shown.</p>")
 ```
 
 ### Genes
@@ -109,8 +122,9 @@ read_tsv(params$contrib_genes, show_col_types = FALSE) |>
     head(50) |>
     kable(caption = "A matrix (featureLoadings)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
-    scroll_box(height = "400px")|>
-    footnote(general = "Only the top 50 rows are shown.")
+    scroll_box(height = "400px")
+
+knitr::asis_output("<p style='margin-top: 8px;'><em>Note:</em> Only the first 50 rows are shown.</p>")
 ```
 
 :::
