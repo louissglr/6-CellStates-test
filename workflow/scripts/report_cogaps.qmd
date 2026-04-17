@@ -275,51 +275,40 @@ include_graphics(params$dotplot)
 
 ::: {.panel-tabset}
 
-### Enrichment — heatmap (get_function)
+### Enrichment
+
+::: {.panel-tabset}
+
+#### Heatmap (get_function)
+
 The enrichment analysis was performed with the `getPatternGeneSet()` function from **CoGAPS**, with msigdbr hallmarks.
+
 ```{r fig-enrich-heatmap}
 #| fig-cap: "Hallmarks enrichment heatmap"
 #| out-width: 100%
 include_graphics(params$png_enrich_heatmap)
 ```
 
-### Enrichment — heatmap (manually)
+#### Heatmap (manually)
+
 The enrichment analysis was performed with the `GSEA()` function from **ClusterProfiler**, with msigdbr hallmarks.
+
 ```{r fig-enrich-heatmap-manually}
 #| fig-cap: "Hallmarks enrichment heatmap (manually)"
 #| out-width: 100%
 include_graphics(params$png_enrich_heatmap_manually)
 ```
-### Enrichment — unique
+
+#### Unique
+
 ```{r fig-enrich-unique}
 #| fig-cap: "Hallmarks enrichment (unique)"
 #| out-width: 100%
 include_graphics(params$png_enrich_unique)
 ```
 
-### Overrepresentation — heatmap (get_function)
-The overrepresentation analysis was performed with the `getPatternGeneSet()` function from **CoGAPS**, with msigdbr hallmarks.
-```{r fig-overr-heatmap}
-#| fig-cap: "Hallmarks overrepresentation heatmap"
-#| out-width: 100%
-include_graphics(params$png_overr_heatmap)
-```
+#### Table
 
-### Overrepresentation — heatmap (manually)
-The overrepresentation analysis was performed with the `enricher` function from **ClusterProfiler**, with msigdbr hallmarks.
-```{r fig-overr-heatmap-manually}
-#| fig-cap: "Hallmarks overrepresentation heatmap (manually)"
-#| out-width: 100%
-include_graphics(params$png_overr_heatmap_manually)
-```
-### Overrepresentation — unique
-```{r fig-overr-unique}
-#| fig-cap: "Hallmarks overrepresentation (unique)"
-#| out-width: 100%
-include_graphics(params$png_overr_unique)
-```
-
-### Tables
 ```{r tbl-enrich}
 read_csv(params$enrich_csv, show_col_types = FALSE) |>
     select(-leadingEdge) |>
@@ -327,11 +316,50 @@ read_csv(params$enrich_csv, show_col_types = FALSE) |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
     scroll_box(height = "350px")
 ```
+
+:::
+
+### Overrepresentation
+
+::: {.panel-tabset}
+
+#### Heatmap (get_function)
+
+The overrepresentation analysis was performed with the `getPatternGeneSet()` function from **CoGAPS**, with msigdbr hallmarks.
+
+```{r fig-overr-heatmap}
+#| fig-cap: "Hallmarks overrepresentation heatmap"
+#| out-width: 100%
+include_graphics(params$png_overr_heatmap)
+```
+
+#### Heatmap (manually)
+
+The overrepresentation analysis was performed with the `enricher` function from **ClusterProfiler**, with msigdbr hallmarks.
+
+```{r fig-overr-heatmap-manually}
+#| fig-cap: "Hallmarks overrepresentation heatmap (manually)"
+#| out-width: 100%
+include_graphics(params$png_overr_heatmap_manually)
+```
+
+#### Unique
+
+```{r fig-overr-unique}
+#| fig-cap: "Hallmarks overrepresentation (unique)"
+#| out-width: 100%
+include_graphics(params$png_overr_unique)
+```
+
+#### Table
+
 ```{r tbl-overr}
 read_csv(params$overr_csv, show_col_types = FALSE) |>
     kable(caption = "Hallmarks overrepresentation (get_function)") |>
     kable_styling(bootstrap_options = c("striped", "hover")) |>
     scroll_box(height = "350px")
 ```
+
+:::
 
 :::
