@@ -48,3 +48,4 @@ dependencies:
   - r-ggpubr
   - r-clustree
   - r-ggtext
+  - r-ggridges

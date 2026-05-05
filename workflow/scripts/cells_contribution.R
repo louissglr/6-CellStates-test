@@ -32,7 +32,7 @@ sample_factors$dominant_pattern <- apply(
 )
 
 sample_factors <- sample_factors %>%
-  relocate(dominant_pattern, .after = barcode)
+  relocate(dominant_pattern, .after = last_col())
 
 write.table(
   sample_factors,

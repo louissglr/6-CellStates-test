@@ -40,6 +40,7 @@ def all_outputs():
         # Pattern specificity PDF
         outputs.append(f"{base}/specificity/{prefix}.plot_patterns.png")
         outputs.append(f"{base}/specificity/{prefix}.plot_subclones.png")
+        outputs.append(f"{base}/specificity/{prefix}.distrib_weight.png")
 
         # Hallmarks enrichment & overrepresentation CSVs
         outputs.append(f"{base}/hallmarks/get_function/enrichment/{prefix}.hallmarks_enrichment.csv")
@@ -361,6 +362,17 @@ rule nb_cells:
     script:
         "scripts/plot_nb_cells.R"
 
+rule distrib_score:
+    input:
+        contrib=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/contributions/{sample}.npatterns-{npatterns}.contributions_cells.txt",
+        subclones=config["subcloneDir"] + "/{sample}/seurat-multimodal_vars30-30/clusters/clusters_vars30-30_res0.4.tsv",
+    output:
+        png=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.distrib_weight.png"
+    conda:
+        "envs/cogaps.yml"
+    threads: 1
+    script:
+        "scripts/plot_distrib_score.R"
 
 rule pathway_activity_maya:
     input:
@@ -432,6 +444,7 @@ rule render_report:
         pairwise_csv=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/statistics/{sample}.npatterns-{npatterns}.pairwise_results.csv",
         png_specificity_patterns=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.plot_patterns.png",
         png_specificity_subclones=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.plot_subclones.png",
+        png_distrib_score=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/specificity/{sample}.npatterns-{npatterns}.distrib_weight.png",
         png_enrich_unique=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_unique.png",
         png_overr_unique=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/overrep/{sample}.npatterns-{npatterns}.hallmarks_overrepresentation_unique.png",
         png_enrich_heatmap=config["cogapsOutDir"] + "/{sample}/cogaps/patterns_{npatterns}/hallmarks/get_function/enrichment/{sample}.npatterns-{npatterns}.hallmarks_enrichment_heatmap.png",
@@ -511,6 +524,7 @@ rule render_report:
             -P umap_nmf:"{input.umap_nmf}" \
             -P umap_nb_cells_bysubclones:"{input.umap_nb_cells_bysubclones}" \
             -P umap_nb_cells_bypatterns:"{input.umap_nb_cells_bypatterns}" \
+            -P png_distrib_score:"{input.png_distrib_score}"\
             -P weight_scrnaseq:"{input.weight_scrnaseq}" \
             -P weight_scatacseq:"{input.weight_scatacseq}" \
             -P weight_multimodal:"{input.weight_multimodal}" \
